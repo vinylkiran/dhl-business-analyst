@@ -1,0 +1,8 @@
+Segment,customer_count,avg_recency_days,avg_frequency,total_revenue,avg_monetary,avg_order_value,avg_otif_rate,revenue_pct,top_channel,top_region
+Potential Loyalists,151,2,170.5,875865348.26,5800433.0,34039.0,87.7,37.44,B2B,International
+Lost,80,10,172.0,461010947.65999997,5762637.0,33530.0,87.55,19.71,B2B,Southeast
+At Risk,46,5,180.5,277722893.55,6037454.0,33445.0,86.76,11.87,B2B,Southwest
+Champions,36,0,186.4,230469149.93,6401921.0,34427.0,86.49,9.85,B2B,West
+Loyal Customers,34,1,188.1,217988540.22,6411428.0,34106.0,88.37,9.32,B2B,West
+About to Sleep,33,5,160.3,187378150.89,5678126.0,35361.0,86.77,8.01,B2B,Southeast
+New Customers,18,0,151.9,88825762.39,4934765.0,32425.0,86.95,3.8,B2B,Northeast

@@ -1,0 +1,80 @@
+
+DHL SUPPLY CHAIN — A/B TEST READOUT
+======================================
+Project:  RFM Segmentation & Retention Campaign — At Risk Segment
+Author:   Vinyl Kiran Anipe (BA/DA)
+Date:     2024-06-XX (simulated post-campaign analysis)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. HYPOTHESIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  H₀ (null):        The retention offer has no effect on 90-day
+                    re-order rate for At Risk customers.
+  H₁ (alternative): The retention offer increases the 90-day
+                    re-order rate compared to the control group.
+  Direction:        Two-tailed (z-test), α = 0.05
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. TEST DESIGN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Target population:   At Risk RFM segment (46 customers)
+  Randomisation:       50/50 random split, seed=42
+  Test group:          23 customers — received retention offer
+  Control group:       23 customers — no offer (business as usual)
+  Simulated uplift:    15% increase in order probability for test group
+  Observation window:  90 days post-campaign launch
+  Primary metric:      Conversion rate (placed ≥1 order in 90 days)
+  Guardrail metric:    Average order value (must not decrease)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. RESULTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  PRIMARY METRIC — Conversion Rate:
+    Test group:      10/23 = 43.5%
+    Control group:   12/23 = 52.2%
+    Absolute lift:   -0.0870 (-16.7% relative lift)
+    95% CI:          [-0.3746, +0.2007]
+                     [-37.5%, 20.1%]
+
+  GUARDRAIL METRIC — Average Order Value:
+    Test group AOV:    $33,114.67
+    Control group AOV: $33,075.55
+    Difference:        $+39.12 (+0.12%)
+    Guardrail status:  PASSING — AOV not significantly degraded
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. STATISTICAL SIGNIFICANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Test:         Two-proportion z-test (two-tailed)
+  z-statistic:  -0.5903
+  p-value:      0.5550
+  α threshold:  0.05
+  Result:       NOT statistically significant — fail to reject H₀
+
+  Effect size (Cohen's h):  0.1743
+  Interpretation:           Small effect
+
+  Post-hoc power:           0.086 (8.6%)
+  Minimum Detectable Effect: 0.4127 (41.3%)
+  Observed lift ≥ MDE:      NO — increase sample or extend duration
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. RECOMMENDATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Decision: DO NOT LAUNCH — insufficient evidence
+
+  Rationale:
+    ✗ Conversion rate lift is NOT statistically significant.
+    ✓ Average order value is not significantly degraded.
+    ✗ Sample size is insufficient to detect the observed effect reliably.
+
+  If launched at scale to all At Risk customers (46 total):
+    Expected additional conversions: -4 customers
+    Revenue recovered (est.):        $-133,778
+
+  Next steps:
+  1. Present results to Commercial Manager for campaign sign-off.
+  2. Segment At Risk by Customer_Type for targeted offer customisation.
+  3. Track actual 90-day conversion rate post-launch against this baseline.
+  4. Run a follow-up analysis at 90 days to validate simulated results.
+  5. Consider expanding to "About to Sleep" segment in the next sprint.
