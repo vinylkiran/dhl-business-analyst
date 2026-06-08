@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DHL Supply Chain Analytics — BA/DA Portfolio</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1A1A1A}
+
+/* NAV */
+.slide-nav{position:fixed;top:0;left:0;width:100%;background:#D40511;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:48px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-logo{background:#FFCC00;color:#D40511;font-weight:900;font-size:14px;padding:3px 8px;border-radius:3px;letter-spacing:1px}
+.nav-title{color:white;font-size:12px;font-weight:600;opacity:.9}
+.nav-links{display:flex;gap:6px}
+.nav-links a{color:white;text-decoration:none;font-size:10px;padding:4px 8px;border-radius:3px;opacity:.8;transition:all .2s}
+.nav-links a:hover{opacity:1;background:rgba(255,255,255,.15)}
+
+/* SLIDE SHELL */
+.slide{min-height:100vh;padding:80px 64px 48px;display:flex;flex-direction:column;justify-content:center;border-bottom:3px solid #EEE;position:relative}
+.slide:nth-child(even){background:#FAFAFA}
+.slide-num{position:absolute;top:64px;right:64px;font-size:48px;font-weight:900;color:#F0F0F0;line-height:1}
+
+/* TITLE SLIDE */
+.title-slide{background:linear-gradient(135deg,#D40511 0%,#8B0000 100%);color:white;text-align:center;align-items:center}
+.title-logo{background:#FFCC00;color:#D40511;font-weight:900;font-size:32px;padding:8px 20px;border-radius:6px;letter-spacing:2px;margin-bottom:32px;display:inline-block}
+.title-h1{font-size:40px;font-weight:700;margin-bottom:8px;line-height:1.2}
+.title-h2{font-size:22px;font-weight:300;opacity:.85;margin-bottom:4px}
+.title-sub{font-size:14px;opacity:.7;margin-top:20px;letter-spacing:1px;text-transform:uppercase}
+.title-divider{width:80px;height:3px;background:#FFCC00;margin:24px auto}
+
+/* SECTION HEADERS */
+.slide-label{font-size:10px;font-weight:700;color:#D40511;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px}
+.slide-title{font-size:32px;font-weight:700;color:#1A1A1A;margin-bottom:6px;line-height:1.2}
+.slide-subtitle{font-size:14px;color:#777;margin-bottom:32px}
+.red-rule{width:60px;height:3px;background:#D40511;margin-bottom:28px}
+
+/* KPI CARDS */
+.kpi-row{display:flex;gap:20px;margin-bottom:32px;flex-wrap:wrap}
+.kpi-card{flex:1;min-width:160px;background:white;border-radius:10px;padding:20px 16px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.08);border-top:4px solid #D40511}
+.kpi-val{font-size:28px;font-weight:700;color:#D40511}
+.kpi-lbl{font-size:11px;color:#777;margin-top:4px;font-weight:600}
+
+/* CONTENT GRID */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;align-items:start}
+
+/* FINDING CARDS */
+.finding{background:white;border-radius:8px;padding:16px 18px;margin-bottom:12px;border-left:4px solid #D40511;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.finding-num{font-size:11px;font-weight:700;color:#D40511;text-transform:uppercase;letter-spacing:1px}
+.finding-text{font-size:13px;color:#333;margin-top:4px;line-height:1.5}
+
+/* TRAFFIC LIGHTS */
+.tl-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.tl-card{flex:1;min-width:140px;background:white;border-radius:8px;padding:12px 14px;box-shadow:0 1px 6px rgba(0,0,0,.07);text-align:center}
+.tl-dot{width:18px;height:18px;border-radius:50%;display:inline-block;margin-bottom:6px}
+.tl-metric{font-size:11px;font-weight:700;color:#555}
+.tl-val{font-size:16px;font-weight:700;margin-top:2px}
+.green-card .tl-dot{background:#2E7D32}.green-card .tl-val{color:#2E7D32}
+.amber-card .tl-dot{background:#F57C00}.amber-card .tl-val{color:#F57C00}
+.red-card .tl-dot{background:#D40511}.red-card .tl-val{color:#D40511}
+
+/* TABLE */
+.dhl-table{width:100%;border-collapse:collapse;font-size:12px}
+.dhl-table thead{background:#1A1A1A;color:white}
+.dhl-table th{padding:9px 12px;text-align:left;font-weight:600;white-space:nowrap}
+.dhl-table td{padding:8px 12px;border-bottom:1px solid #EEE}
+.dhl-table tbody tr:hover{background:#F5F5F5}
+.badge{padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700}
+.badge-high{background:#FFEBEE;color:#D40511}
+.badge-med{background:#FFF3E0;color:#F57C00}
+.badge-low{background:#E8F5E9;color:#2E7D32}
+.badge-p1{background:#E8F5E9;color:#2E7D32}
+.badge-p2{background:#E3F2FD;color:#1565C0}
+.badge-p3{background:#FFF3E0;color:#F57C00}
+
+/* SEGMENT TABLE */
+.seg-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #EEE}
+.seg-bar-wrap{flex:1;background:#F5F5F5;border-radius:3px;height:8px}
+.seg-bar{height:8px;border-radius:3px}
+.seg-label{font-size:11px;font-weight:600;width:130px;color:#333}
+.seg-count{font-size:11px;color:#777;width:40px;text-align:right}
+
+/* IMPACT TABLE */
+.impact-row{display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 1fr;gap:8px;padding:10px 12px;border-bottom:1px solid #EEE;align-items:center}
+.impact-head{background:#1A1A1A;color:white;border-radius:6px 6px 0 0;font-size:11px;font-weight:700}
+.impact-row:last-child{border-bottom:none}
+.impact-val{font-size:13px;font-weight:700;color:#D40511}
+
+/* NEXT STEPS */
+.next-col{background:white;border-radius:10px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.next-col-title{font-size:13px;font-weight:700;color:white;padding:8px 12px;border-radius:6px;margin-bottom:14px;text-align:center}
+.next-item{font-size:12px;color:#444;padding:8px 0;border-bottom:1px solid #EEE;line-height:1.5}
+.next-item:last-child{border-bottom:none}
+.next-item::before{content:"→ ";color:#D40511;font-weight:700}
+
+/* DATA ASSETS */
+.asset-section{margin-bottom:20px}
+.asset-section-title{font-size:11px;font-weight:700;color:#D40511;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid #D40511}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="slide-nav">
+  <div class="nav-brand">
+    <span class="nav-logo">DHL</span>
+    <span class="nav-title">Supply Chain Analytics — BA/DA Portfolio</span>
+  </div>
+  <div class="nav-links">
+    <a href="#s1">Title</a>
+    <a href="#s2">Summary</a>
+    <a href="#s3">P1</a>
+    <a href="#s4">P2</a>
+    <a href="#s5">P3</a>
+    <a href="#s6">P4</a>
+    <a href="#s7">P5</a>
+    <a href="#s8">Impact</a>
+    <a href="#s9">Assets</a>
+    <a href="#s10">Next Steps</a>
+  </div>
+</nav>
+
+<!-- SLIDE 1: TITLE -->
+<div class="slide title-slide" id="s1">
+  <div class="slide-num" style="color:rgba(255,255,255,.1)">01</div>
+  <div class="title-logo">DHL</div>
+  <div class="title-h1">Supply Chain Analytics<br>BA/DA Portfolio</div>
+  <div class="title-divider"></div>
+  <div class="title-h2">Vinyl Kiran Anipe</div>
+  <div class="title-h2" style="font-size:18px;margin-top:4px">Business Analyst · Supply Chain</div>
+  <div class="title-sub">Projects 01–05 · Three Warehouses · 2022–2024</div>
+</div>
+
+<!-- SLIDE 2: EXECUTIVE SUMMARY -->
+<div class="slide" id="s2">
+  <div class="slide-num">02</div>
+  <div class="slide-label">Executive Summary</div>
+  <div class="slide-title">Five Projects. One Connected Analytics Programme.</div>
+  <div class="red-rule"></div>
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-val">2,000</div><div class="kpi-lbl">SKUs Analysed</div></div>
+    <div class="kpi-card"><div class="kpi-val">$2.3B</div><div class="kpi-lbl">Revenue Covered</div></div>
+    <div class="kpi-card"><div class="kpi-val">$332K</div><div class="kpi-lbl">Est. Annual Value<br>from Recommendations</div></div>
+    <div class="kpi-card"><div class="kpi-val">5</div><div class="kpi-lbl">Dashboards Delivered</div></div>
+    <div class="kpi-card"><div class="kpi-val">219K</div><div class="kpi-lbl">WMS Tasks Analysed</div></div>
+    <div class="kpi-card"><div class="kpi-val">398</div><div class="kpi-lbl">Customers Segmented</div></div>
+  </div>
+  <div class="two-col">
+    <div>
+      <p style="font-size:14px;color:#444;line-height:1.7;margin-bottom:16px">
+        This portfolio covers five end-to-end BA/DA projects delivered across DHL's Illinois, New Jersey, and Texas warehouse network. Each project follows the same methodology: define the business problem precisely, explore the data with SQL, derive KPIs with documented formulas, and deliver an interactive dashboard alongside written stakeholder documents.
+      </p>
+      <p style="font-size:14px;color:#444;line-height:1.7">
+        Collectively, the five projects create a connected analytics foundation covering inventory management, demand planning, customer retention, warehouse operations, and performance monitoring — moving from fragmented, site-specific Excel tracking to a standardised, repeatable analytical framework.
+      </p>
+    </div>
+    <div>
+      <canvas id="summaryChart" height="200"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: PROJECT 1 -->
+<div class="slide" id="s3">
+  <div class="slide-num">03</div>
+  <div class="slide-label">Project 01 · Inventory Management</div>
+  <div class="slide-title">SKU Segmentation &amp; Inventory Optimisation</div>
+  <div class="red-rule"></div>
+  <div class="two-col">
+    <div>
+      <div class="finding"><div class="finding-num">Problem</div><div class="finding-text">2,000 SKUs across three warehouses managed with a single, undifferentiated safety stock policy. Over-investment in C-class slow movers; under-buffering of high-revenue AX SKUs causing stockouts and lost revenue.</div></div>
+      <div class="finding"><div class="finding-num">Approach</div><div class="finding-text">ABC classification (revenue contribution) × XYZ classification (demand variability) to create a 2×3 segmentation matrix. Derived differentiated safety stock multipliers and reorder points per segment using the statistical formula SS = Z × σ × √(Lead Time).</div></div>
+      <div class="finding"><div class="finding-num">Finding 1</div><div class="finding-text">164 A-class SKUs generate ~70% of revenue. 49 AX SKUs are the highest-priority replenishment items — predictable, high-value, zero tolerance for stockout.</div></div>
+      <div class="finding"><div class="finding-num">Finding 2</div><div class="finding-text">1,048 CY SKUs represent the over-investment risk: low revenue, moderate variability, high catalogue count. Candidates for safety stock reduction or rationalisation.</div></div>
+      <div class="finding"><div class="finding-num">Finding 3</div><div class="finding-text">AZ SKUs (erratic, high-value) have the highest stockout risk in the portfolio. Standard moving-average forecasting is unsuitable — requires probabilistic or simulation-based safety stock.</div></div>
+    </div>
+    <div>
+      <canvas id="abcChart" height="220"></canvas>
+      <div style="margin-top:20px;background:#FFEBEE;border-radius:8px;padding:16px;border-left:4px solid #D40511">
+        <div style="font-size:11px;font-weight:700;color:#D40511;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Business Impact</div>
+        <div style="font-size:13px;color:#333;line-height:1.6">Differentiated SS rules reduce working capital tied up in C-class overstock while protecting A-class fill rates. Estimated annual value of improved stock positioning: <strong>~$150K</strong> (reduced excess stock carrying cost + reduced A-class stockout cost).</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: PROJECT 2 -->
+<div class="slide" id="s4">
+  <div class="slide-num">04</div>
+  <div class="slide-label">Project 02 · Demand Planning</div>
+  <div class="slide-title">Demand Forecasting &amp; Pipeline Requirements</div>
+  <div class="red-rule"></div>
+  <div class="two-col">
+    <div>
+      <div class="finding"><div class="finding-num">Problem</div><div class="finding-text">No standardised forecast methodology across the planning team. No measurable baseline to evaluate any future improvement. No pipeline specification to enable automation.</div></div>
+      <div class="finding"><div class="finding-num">Approach</div><div class="finding-text">Established a 14-day moving average as the baseline model. Calculated MAPE per ABC/XYZ segment on an out-of-sample 30-day test window. Derived category seasonality indices. Wrote a formal pipeline requirements document for the DE team.</div></div>
+      <div class="finding"><div class="finding-num">Finding 1</div><div class="finding-text">AX SKUs achieve MAPE of 12–14% with a simple 14-day MA — within acceptable range for operational planning. No complex model needed for the most predictable items.</div></div>
+      <div class="finding"><div class="finding-num">Finding 2</div><div class="finding-text">Consumer Electronics and Fashion &amp; Apparel show seasonality indices of 1.3–1.4 in Q4. Safety stock should be increased by ~30–40% entering the peak season for these categories.</div></div>
+      <div class="finding"><div class="finding-num">Finding 3</div><div class="finding-text">Z-class SKUs are unsuitable for moving average methods (MAPE > 50%). Probabilistic safety stock methods required. This is the highest-priority modelling task for the DS team.</div></div>
+    </div>
+    <div>
+      <div style="background:white;border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:12px">MAPE by Segment (14-Day MA Baseline)</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:10px"><span style="font-size:11px;font-weight:600;width:28px;color:#333">AX</span><div style="flex:1;background:#F0F0F0;border-radius:3px;height:14px"><div style="width:26%;height:14px;background:#2E7D32;border-radius:3px"></div></div><span style="font-size:11px;color:#555;width:50px;text-align:right">~13%</span></div><div style="display:flex;align-items:center;gap:10px"><span style="font-size:11px;font-weight:600;width:28px;color:#333">AY</span><div style="flex:1;background:#F0F0F0;border-radius:3px;height:14px"><div style="width:40%;height:14px;background:#F57C00;border-radius:3px"></div></div><span style="font-size:11px;color:#555;width:50px;text-align:right">~20%</span></div><div style="display:flex;align-items:center;gap:10px"><span style="font-size:11px;font-weight:600;width:28px;color:#333">AZ</span><div style="flex:1;background:#F0F0F0;border-radius:3px;height:14px"><div style="width:66%;height:14px;background:#D40511;border-radius:3px"></div></div><span style="font-size:11px;color:#555;width:50px;text-align:right">~33%</span></div><div style="display:flex;align-items:center;gap:10px"><span style="font-size:11px;font-weight:600;width:28px;color:#333">BX</span><div style="flex:1;background:#F0F0F0;border-radius:3px;height:14px"><div style="width:28%;height:14px;background:#2E7D32;border-radius:3px"></div></div><span style="font-size:11px;color:#555;width:50px;text-align:right">~14%</span></div><div style="display:flex;align-items:center;gap:10px"><span style="font-size:11px;font-weight:600;width:28px;color:#333">BY</span><div style="flex:1;background:#F0F0F0;border-radius:3px;height:14px"><div style="width:42%;height:14px;background:#F57C00;border-radius:3px"></div></div><span style="font-size:11px;color:#555;width:50px;text-align:right">~21%</span></div><div style="display:flex;align-items:center;gap:10px"><span style="font-size:11px;font-weight:600;width:28px;color:#333">CY</span><div style="flex:1;background:#F0F0F0;border-radius:3px;height:14px"><div style="width:44%;height:14px;background:#F57C00;border-radius:3px"></div></div><span style="font-size:11px;color:#555;width:50px;text-align:right">~22%</span></div>
+        </div>
+      </div>
+      <div style="background:#E8F5E9;border-radius:8px;padding:16px;border-left:4px solid #2E7D32">
+        <div style="font-size:11px;font-weight:700;color:#2E7D32;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Business Impact</div>
+        <div style="font-size:13px;color:#333;line-height:1.6">Forecast baseline enables the DE team to build an automated daily pipeline. Eliminating manual planner forecast prep saves ~2 hours/day/planner. Estimated annual value: <strong>~$80K</strong>.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: PROJECT 3 -->
+<div class="slide" id="s5">
+  <div class="slide-num">05</div>
+  <div class="slide-label">Project 03 · Customer Analytics</div>
+  <div class="slide-title">RFM Segmentation &amp; Retention A/B Test</div>
+  <div class="red-rule"></div>
+  <div class="two-col">
+    <div>
+      <div class="finding"><div class="finding-num">Problem</div><div class="finding-text">398 active customers managed reactively. No framework for identifying which customers were at risk of churn before they churned, or which were highest priority for growth investment.</div></div>
+      <div class="finding"><div class="finding-num">Approach</div><div class="finding-text">RFM scoring (Recency × Frequency × Monetary) across 24 months of order history. Seven-segment taxonomy. A/B test designed for the "At Risk" segment (46 customers) targeting 90-day re-order conversion.</div></div>
+      <div class="finding"><div class="finding-num">Finding 1</div><div class="finding-text">Potential Loyalists (151 customers) are the highest-value growth target — already engaged, not yet fully committed. The right nudge (personalised offer, dedicated account contact) could convert them to Loyal tier.</div></div>
+      <div class="finding"><div class="finding-num">Finding 2</div><div class="finding-text">Champions and Loyal Customers (70 total) have OTIF rates 3–5pp above the base average — confirming that operational service quality is a retention driver for top customers.</div></div>
+      <div class="finding"><div class="finding-num">Finding 3</div><div class="finding-text">A/B test result: NOT statistically significant (p=0.555). Recommend extending campaign duration to 120 days and increasing control group size before drawing conclusions.</div></div>
+    </div>
+    <div>
+      <div style="background:white;border-radius:10px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:10px">Customer Segment Distribution (n=398)</div>
+        <div class="seg-row"><span class="seg-label">Potential Loyalists</span><div class="seg-bar-wrap"><div class="seg-bar" style="width:38%;background:#1565C0"></div></div><span class="seg-count">151</span></div><div class="seg-row"><span class="seg-label">Lost</span><div class="seg-bar-wrap"><div class="seg-bar" style="width:20%;background:#D40511"></div></div><span class="seg-count">80</span></div><div class="seg-row"><span class="seg-label">At Risk</span><div class="seg-bar-wrap"><div class="seg-bar" style="width:12%;background:#F57C00"></div></div><span class="seg-count">46</span></div><div class="seg-row"><span class="seg-label">Champions</span><div class="seg-bar-wrap"><div class="seg-bar" style="width:9%;background:#2E7D32"></div></div><span class="seg-count">36</span></div><div class="seg-row"><span class="seg-label">Loyal Customers</span><div class="seg-bar-wrap"><div class="seg-bar" style="width:9%;background:#2E7D32"></div></div><span class="seg-count">34</span></div><div class="seg-row"><span class="seg-label">About to Sleep</span><div class="seg-bar-wrap"><div class="seg-bar" style="width:8%;background:#F57C00"></div></div><span class="seg-count">33</span></div><div class="seg-row"><span class="seg-label">New Customers</span><div class="seg-bar-wrap"><div class="seg-bar" style="width:5%;background:#6A1B9A"></div></div><span class="seg-count">18</span></div>
+      </div>
+      <div style="background:#E3F2FD;border-radius:8px;padding:14px;border-left:4px solid #1565C0">
+        <div style="font-size:11px;font-weight:700;color:#1565C0;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Business Impact</div>
+        <div style="font-size:13px;color:#333;line-height:1.6">Segment playbook enables account managers to prioritise outreach systematically. Converting 10% of At Risk to Loyal adds ~$45K ARR. Test framework is reusable for future campaigns.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6: PROJECT 4 -->
+<div class="slide" id="s6">
+  <div class="slide-num">06</div>
+  <div class="slide-label">Project 04 · Warehouse Efficiency</div>
+  <div class="slide-title">Warehouse Slotting Optimisation</div>
+  <div class="red-rule"></div>
+  <div class="two-col">
+    <div>
+      <div class="finding"><div class="finding-num">Problem</div><div class="finding-text">High-velocity Hot SKUs stored in suboptimal Reserve/Bulk zones; low-velocity Cold SKUs occupying premium Pick_Face space. Operators travel further per pick on the highest-frequency items, inflating labour cost.</div></div>
+      <div class="finding"><div class="finding-num">Approach</div><div class="finding-text">Frequency-based slotting: Hot/Warm/Cold tiers derived from 24-month pick frequency percentiles. Labour saving calculated from zone-level Duration_Min differentials. SKU affinity analysis for co-location recommendations. Three-phase implementation plan.</div></div>
+      <div class="finding"><div class="finding-num">Finding 1</div><div class="finding-text">290 SKUs misplaced (17.4% mismatch rate): 167 Hot SKUs not in Pick_Face, 123 Cold SKUs blocking Pick_Face capacity. Highest-value misplacement: Consumer Electronics and FMCG A-class SKUs in Bulk storage.</div></div>
+      <div class="finding"><div class="finding-num">Finding 2</div><div class="finding-text">Total programme ROI: 5.8×. Break-even: 125 days. Implementation cost: $3,838. Labour saving over 24 months: $22,414. Slotting optimisation alone (Phase 1) delivers ROI of 9.1×.</div></div>
+      <div class="finding"><div class="finding-num">Finding 3</div><div class="finding-text">WRONG_LOCATION errors are highest at TX03 (103 incidents) — consistent with recent slotting changes. This is a transition artefact expected to resolve within 60 days of implementation completion.</div></div>
+    </div>
+    <div>
+      <div style="background:white;border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:14px">Implementation Programme Summary</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#F8F8F8;border-radius:6px;border-left:3px solid #2E7D32"><span style="font-size:12px;font-weight:600;color:#333">Phase 1 — Hot SKU re-slot (167 SKUs)</span><span style="font-size:13px;font-weight:700;color:#2E7D32">ROI 9.1× · 80 days BEP</span></div><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#F8F8F8;border-radius:6px;border-left:3px solid #2E7D32"><span style="font-size:12px;font-weight:600;color:#333">Phase 2 — Cold SKU clearance (123 SKUs)</span><span style="font-size:13px;font-weight:700;color:#2E7D32">ROI 9.7× · immediate</span></div><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#F8F8F8;border-radius:6px;border-left:3px solid #F57C00"><span style="font-size:12px;font-weight:600;color:#333">Phase 3 — Warm re-sort + monitoring</span><span style="font-size:13px;font-weight:700;color:#F57C00">Completes optimisation</span></div><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#F8F8F8;border-radius:6px;border-left:3px solid #D40511"><span style="font-size:12px;font-weight:600;color:#333">Total programme</span><span style="font-size:13px;font-weight:700;color:#D40511">$22,414 saved · 5.8× ROI</span></div>
+        </div>
+      </div>
+      <div style="background:#E8F5E9;border-radius:8px;padding:14px;border-left:4px solid #2E7D32">
+        <div style="font-size:11px;font-weight:700;color:#2E7D32;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Business Impact</div>
+        <div style="font-size:13px;color:#333;line-height:1.6"><strong>$22,414</strong> labour saving over 24 months. Implementation cost $3,838. Break-even 125 days. Highest near-term ROI of all five projects.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7: PROJECT 5 -->
+<div class="slide" id="s7">
+  <div class="slide-num">07</div>
+  <div class="slide-label">Project 05 · Operational Monitoring</div>
+  <div class="slide-title">WMS Operational Dashboard</div>
+  <div class="red-rule"></div>
+  <div class="two-col">
+    <div>
+      <div class="finding"><div class="finding-num">Problem</div><div class="finding-text">Three site managers tracking KPIs in incompatible local Excel files. Network-level performance invisible to VP Operations. No early warning before SLA breaches. Data quality issues (high-error SKUs, operator spikes) never surfaced.</div></div>
+      <div class="finding"><div class="finding-num">Approach</div><div class="finding-text">Standardised KPI definitions across all three sites in a formal KPI dictionary. DuckDB analysis of 219,000 WMS tasks. Five-section Chart.js dashboard. Operator scorecard (180 operators), data quality monitoring layer (34 flags).</div></div>
+      <div class="finding"><div class="finding-num">Finding 1</div><div class="finding-text">Network pick accuracy 99.27%, putaway 99.70% — both GREEN. Cycle count accuracy 98.49% is AMBER at two sites, the portfolio's primary operational concern and leading indicator of future IRA risk.</div></div>
+      <div class="finding"><div class="finding-num">Finding 2</div><div class="finding-text">20 SKUs flagged with persistent error rates above 2% for 3+ consecutive months — product-level issues (labelling, packaging) rather than operator error. Quality team review required.</div></div>
+      <div class="finding"><div class="finding-num">Finding 3</div><div class="finding-text">All 180 operators above the 98.5% coaching threshold. Four high performers (≥99.8%) identified — three showing declining trend in H2, requiring proactive retention of high-performer status.</div></div>
+    </div>
+    <div>
+      <div style="background:white;border-radius:10px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:12px">KPI Traffic Light Summary — Network</div>
+        <div class="tl-row">
+          <div class="tl-card green-card"><span class="tl-dot"></span><div class="tl-metric">Pick Accuracy</div><div class="tl-val">99.27%</div></div>
+          <div class="tl-card green-card"><span class="tl-dot"></span><div class="tl-metric">Putaway</div><div class="tl-val">99.70%</div></div>
+          <div class="tl-card amber-card"><span class="tl-dot"></span><div class="tl-metric">Cycle Count</div><div class="tl-val">98.49%</div></div>
+          <div class="tl-card green-card"><span class="tl-dot"></span><div class="tl-metric">Overall</div><div class="tl-val">99.35%</div></div>
+        </div>
+        <div class="tl-row" style="margin-top:8px">
+          <div class="tl-card green-card"><span class="tl-dot"></span><div class="tl-metric">Picks/hr</div><div class="tl-val">8.0</div></div>
+          <div class="tl-card amber-card"><span class="tl-dot"></span><div class="tl-metric">IRA %</div><div class="tl-val">~80%</div></div>
+          <div class="tl-card green-card"><span class="tl-dot"></span><div class="tl-metric">Error Rate</div><div class="tl-val">0.65%</div></div>
+          <div class="tl-card green-card"><span class="tl-dot"></span><div class="tl-metric">Operators below<br>threshold</div><div class="tl-val">0 / 180</div></div>
+        </div>
+      </div>
+      <div style="background:#FFF3E0;border-radius:8px;padding:14px;border-left:4px solid #F57C00">
+        <div style="font-size:11px;font-weight:700;color:#F57C00;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Business Impact</div>
+        <div style="font-size:13px;color:#333;line-height:1.6">Single source of truth eliminates duplicate reporting effort (~3 hrs/week per site). Early warning layer targets SLA breach prevention — estimated value: <strong>~$35K/yr</strong> in avoided SLA penalties and remediation costs.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 8: BUSINESS IMPACT SUMMARY -->
+<div class="slide" id="s8">
+  <div class="slide-num">08</div>
+  <div class="slide-label">Business Impact</div>
+  <div class="slide-title">Consolidated Recommendations — Value &amp; Priority</div>
+  <div class="red-rule"></div>
+  <div class="two-col">
+    <div>
+      <div style="background:white;border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.08)">
+        <div class="impact-row impact-head">
+          <span>Recommendation</span><span>Est. Annual Value</span><span>Complexity</span><span>Priority</span><span>Status</span>
+        </div>
+        <div class="impact-row"><span style="font-size:12px;font-weight:600;color:#333">Warehouse slotting re-slot (P4)</span><span class="impact-val">$22K</span><span><span class="badge badge-low">Low</span></span><span style="font-size:12px;font-weight:700;color:#2E7D32">P1</span><span style="font-size:11px;color:#2E7D32;font-weight:600">Ready</span></div><div class="impact-row"><span style="font-size:12px;font-weight:600;color:#333">IRA gap investigation (P5)</span><span class="impact-val">$30K</span><span><span class="badge badge-medium">Medium</span></span><span style="font-size:12px;font-weight:700;color:#F57C00">P2</span><span style="font-size:11px;color:#2E7D32;font-weight:600">Q1</span></div><div class="impact-row"><span style="font-size:12px;font-weight:600;color:#333">SKU safety stock rules (P1)</span><span class="impact-val">$150K</span><span><span class="badge badge-medium">Medium</span></span><span style="font-size:12px;font-weight:700;color:#F57C00">P2</span><span style="font-size:11px;color:#2E7D32;font-weight:600">Q1</span></div><div class="impact-row"><span style="font-size:12px;font-weight:600;color:#333">Demand forecast pipeline (P2)</span><span class="impact-val">$80K</span><span><span class="badge badge-high">High</span></span><span style="font-size:12px;font-weight:700;color:#D40511">P3</span><span style="font-size:11px;color:#2E7D32;font-weight:600">Q2</span></div><div class="impact-row"><span style="font-size:12px;font-weight:600;color:#333">RFM retention campaign (P3)</span><span class="impact-val">$45K</span><span><span class="badge badge-medium">Medium</span></span><span style="font-size:12px;font-weight:700;color:#D40511">P3</span><span style="font-size:11px;color:#2E7D32;font-weight:600">Q2</span></div><div class="impact-row"><span style="font-size:12px;font-weight:600;color:#333">WMS daily auto-refresh (P5)</span><span class="impact-val">$5K</span><span><span class="badge badge-high">High</span></span><span style="font-size:12px;font-weight:700;color:#D40511">P4</span><span style="font-size:11px;color:#2E7D32;font-weight:600">Q3</span></div>
+        <div class="impact-row" style="background:#FFEBEE;font-weight:700">
+          <span style="font-size:12px;color:#D40511">TOTAL PORTFOLIO</span>
+          <span class="impact-val">$332K</span>
+          <span></span><span></span>
+          <span style="font-size:11px;color:#D40511">6 initiatives</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <canvas id="impactChart" height="240"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 9: DATA ASSETS -->
+<div class="slide" id="s9">
+  <div class="slide-num">09</div>
+  <div class="slide-label">Data Assets Delivered</div>
+  <div class="slide-title">Complete Inventory of Outputs Across All Projects</div>
+  <div class="red-rule"></div>
+  <div class="three-col">
+    <div>
+      <div class="asset-section">
+        <div class="asset-section-title">Dashboards (HTML)</div>
+        <table class="dhl-table">
+          <tbody>
+            <tr><td style='font-size:11px'>sku_segmentation_dashboard.html</td><td><span class='badge badge-p1'>1</span></td></tr><tr><td style='font-size:11px'>forecast_dashboard.html</td><td><span class='badge badge-p2'>2</span></td></tr><tr><td style='font-size:11px'>rfm_dashboard.html</td><td><span class='badge badge-p3'>3</span></td></tr><tr><td style='font-size:11px'>warehouse_dashboard.html</td><td><span class='badge badge-p4'>4</span></td></tr><tr><td style='font-size:11px'>wms_dashboard.html</td><td><span class='badge badge-p5'>5</span></td></tr><tr><td style='font-size:11px'>dhl_ba_portfolio_deck.html</td><td><span class='badge badge-p6'>6</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="asset-section">
+        <div class="asset-section-title">Python Scripts</div>
+        <table class="dhl-table">
+          <tbody>
+            <tr><td style='font-size:11px'>sql_exploration.py (×5)</td><td><span class='badge badge-p1–5'>1–5</span></td></tr><tr><td style='font-size:11px'>analysis.py / kpi_calc...</td><td><span class='badge badge-p1–5'>1–5</span></td></tr><tr><td style='font-size:11px'>operator_analysis.py</td><td><span class='badge badge-p5'>5</span></td></tr><tr><td style='font-size:11px'>data_quality.py</td><td><span class='badge badge-p5'>5</span></td></tr><tr><td style='font-size:11px'>slotting_analysis.py</td><td><span class='badge badge-p4'>4</span></td></tr><tr><td style='font-size:11px'>ab_test.py</td><td><span class='badge badge-p3'>3</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div class="asset-section">
+        <div class="asset-section-title">Key CSV Outputs</div>
+        <table class="dhl-table">
+          <tbody>
+            <tr><td style='font-size:11px'>sku_segments.csv (1,664 rows)</td><td><span class='badge badge-p1'>1</span></td></tr><tr><td style='font-size:11px'>demand_summary.csv (2,000 rows)</td><td><span class='badge badge-p2'>2</span></td></tr><tr><td style='font-size:11px'>customer_rfm.csv (398 rows)</td><td><span class='badge badge-p3'>3</span></td></tr><tr><td style='font-size:11px'>slotting_recommendations.csv</td><td><span class='badge badge-p4'>4</span></td></tr><tr><td style='font-size:11px'>kpi_summary.csv</td><td><span class='badge badge-p5'>5</span></td></tr><tr><td style='font-size:11px'>operator_scorecard.csv (180)</td><td><span class='badge badge-p5'>5</span></td></tr><tr><td style='font-size:11px'>data_quality_flags.csv (34)</td><td><span class='badge badge-p5'>5</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div class="asset-section">
+        <div class="asset-section-title">Written Documents</div>
+        <table class="dhl-table">
+          <tbody>
+            <tr><td style='font-size:11px'>business_narrative.md (×5)</td><td><span class='badge badge-p1–5'>1–5</span></td></tr><tr><td style='font-size:11px'>kpi_dictionary.md</td><td><span class='badge badge-p5'>5</span></td></tr><tr><td style='font-size:11px'>master_kpi_dictionary.md</td><td><span class='badge badge-p6'>6</span></td></tr><tr><td style='font-size:11px'>implementation_plan.md</td><td><span class='badge badge-p4'>4</span></td></tr><tr><td style='font-size:11px'>ops_recommendation.md</td><td><span class='badge badge-p4'>4</span></td></tr><tr><td style='font-size:11px'>segment_playbook.md</td><td><span class='badge badge-p3'>3</span></td></tr><tr><td style='font-size:11px'>pipeline_requirements.md</td><td><span class='badge badge-p2'>2</span></td></tr><tr><td style='font-size:11px'>planner_guide.md</td><td><span class='badge badge-p2'>2</span></td></tr><tr><td style='font-size:11px'>brd_summary.md</td><td><span class='badge badge-p6'>6</span></td></tr><tr><td style='font-size:11px'>lessons_learned.md</td><td><span class='badge badge-p6'>6</span></td></tr><tr><td style='font-size:11px'>management_report_template.md</td><td><span class='badge badge-p5'>5</span></td></tr><tr><td style='font-size:11px'>dashboard_user_guide.md</td><td><span class='badge badge-p5'>5</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 10: NEXT STEPS -->
+<div class="slide" id="s10">
+  <div class="slide-num">10</div>
+  <div class="slide-label">Next Steps</div>
+  <div class="slide-title">What Happens After BA Delivery</div>
+  <div class="red-rule"></div>
+  <div class="three-col">
+    <div class="next-col">
+      <div class="next-col-title" style="background:#1565C0">🔧 Data Engineering Team</div>
+      <div class="next-item">Build the daily WMS extract pipeline from the site WMS systems to a central data warehouse (spec in pipeline_requirements.md)</div>
+      <div class="next-item">Automate the demand forecast refresh — daily CSV output by 06:00 per the spec in Project 2</div>
+      <div class="next-item">Connect the WMS dashboard to a live extract so KPIs refresh without manual BA intervention</div>
+      <div class="next-item">Version-control the source CSV files to ensure reproducibility of all BA analysis</div>
+      <div class="next-item">Build a shared data layer module (DuckDB views for all four source tables) used by all downstream scripts</div>
+    </div>
+    <div class="next-col">
+      <div class="next-col-title" style="background:#2E7D32">🧮 Data Science Team</div>
+      <div class="next-item">Build a probabilistic safety stock model for Z-class SKUs (intermittent demand) — the moving average baseline is insufficient for this segment</div>
+      <div class="next-item">Apply seasonal decomposition and SARIMA forecasting to AY/BY SKUs to bring MAPE below the 15% target</div>
+      <div class="next-item">Build a churn prediction model on RFM features to replace the rule-based "At Risk" segment flag with a probability score</div>
+      <div class="next-item">Develop a pick-path optimisation model using the SKU affinity data from Project 4 to reduce multi-zone picks</div>
+      <div class="next-item">Investigate the IRA gap composition using ML clustering on inventory snapshot patterns</div>
+    </div>
+    <div class="next-col">
+      <div class="next-col-title" style="background:#D40511">📋 Business Priority</div>
+      <div class="next-item"><strong>P1 — Immediately:</strong> Execute Phase 1 slotting re-slot (167 Hot SKUs). $22K saving, 125-day break-even, no tech dependency</div>
+      <div class="next-item"><strong>P1 — This quarter:</strong> Review 20 high-error SKUs with the quality team. Each one is a specific, correctable product issue</div>
+      <div class="next-item"><strong>P2 — This quarter:</strong> Investigate cycle count accuracy at IL02 and NJ01. AMBER status for 3 consecutive months — act before it becomes RED</div>
+      <div class="next-item"><strong>P3 — Next quarter:</strong> Re-run the retention A/B test with 120-day follow-up window and larger control group before drawing campaign conclusions</div>
+      <div class="next-item"><strong>Strategic:</strong> Adopt the master KPI dictionary as the network-wide standard — retire local Excel definitions</div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:32px;padding:16px;background:#FFEBEE;border-radius:8px">
+    <span style="font-size:12px;color:#D40511;font-weight:600">DHL Supply Chain Analytics · BA/DA Portfolio · Vinyl Kiran Anipe · 2022–2024 · github.com/vinylkiran/dhl-business-analyst</span>
+  </div>
+</div>
+
+<script>
+const R='#D40511',G='#2E7D32',A='#F57C00',B='#1565C0',P='#6A1B9A';
+
+// Summary donut
+new Chart(document.getElementById('summaryChart'),{
+  type:'doughnut',
+  data:{
+    labels:['P1 SKU Seg','P2 Demand','P3 RFM','P4 Slotting','P5 WMS Dashboard'],
+    datasets:[{data:[150,80,45,22,35],backgroundColor:[R,B,A,G,P],borderWidth:2,borderColor:'white'}]
+  },
+  options:{
+    responsive:true,
+    plugins:{
+      legend:{position:'right',labels:{font:{size:11},padding:12}},
+      title:{display:true,text:'Est. Annual Value by Project ($K)',font:{size:11},color:'#555'}
+    }
+  }
+});
+
+// ABC donut
+new Chart(document.getElementById('abcChart'),{
+  type:'doughnut',
+  data:{
+    labels:['A-class: 164 SKUs','B-class: 213 SKUs','C-class: 1,287 SKUs'],
+    datasets:[{data:[164,213,1287],backgroundColor:[R,A,'#BBBBBB'],borderWidth:2,borderColor:'white'}]
+  },
+  options:{
+    responsive:true,
+    plugins:{
+      legend:{position:'bottom',labels:{font:{size:11},padding:12}},
+      title:{display:true,text:'SKU ABC Classification (1,664 active SKUs)',font:{size:11},color:'#555'}
+    }
+  }
+});
+
+// Impact bar
+new Chart(document.getElementById('impactChart'),{
+  type:'bar',
+  data:{
+    labels:['Slotting\n(P4)','IRA Gap\n(P5)','SKU SS Rules\n(P1)','Forecast\nPipeline (P2)','Retention\nCampaign (P3)','WMS\nAuto-Refresh'],
+    datasets:[{
+      label:'Est. Annual Value ($K)',
+      data:[22,30,150,80,45,5],
+      backgroundColor:[G,A,R,B,P,A],
+      borderRadius:4
+    }]
+  },
+  options:{
+    indexAxis:'y',
+    responsive:true,
+    plugins:{
+      legend:{display:false},
+      title:{display:true,text:'Annual Value by Recommendation ($K)',font:{size:11},color:'#555'}
+    },
+    scales:{
+      x:{title:{display:true,text:'$K annual value',font:{size:10}},ticks:{font:{size:9}}},
+      y:{ticks:{font:{size:10}}}
+    }
+  }
+});
+</script>
+</body>
+</html>
